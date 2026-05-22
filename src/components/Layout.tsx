@@ -11,10 +11,10 @@ const tabs = [
 
 export default function Layout() {
   return (
-    <div className="min-h-screen bg-[#111111] dark:bg-[#111111] text-white flex flex-col">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#111111] text-gray-900 dark:text-white flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-[#111111]/90 backdrop-blur-md border-b border-white/10 px-4 py-3 flex items-center justify-between">
-        <h1 className="text-lg font-bold text-[#e7f900]">Lisa</h1>
+      <header className="sticky top-0 z-40 bg-white/90 dark:bg-[#111111]/90 backdrop-blur-md border-b border-gray-200 dark:border-white/10 px-4 py-3 flex items-center justify-between">
+        <h1 className="text-lg font-bold text-[#111111] dark:text-[#e7f900]">Lisa</h1>
         <ThemeToggle />
       </header>
 
@@ -24,7 +24,7 @@ export default function Layout() {
       </main>
 
       {/* Bottom Tab Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#111111]/95 backdrop-blur-md border-t border-white/10">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md border-t border-gray-200 dark:border-white/10">
         <div
           className="flex items-center justify-around max-w-lg mx-auto"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
@@ -35,7 +35,9 @@ export default function Layout() {
               to={tab.to}
               className={({ isActive }) =>
                 `flex flex-col items-center py-2 px-3 text-xs transition-colors ${
-                  isActive ? 'text-[#e7f900]' : 'text-white/50'
+                  isActive
+                    ? 'text-[#e7f900]'
+                    : 'text-gray-400 dark:text-white/50'
                 }`
               }
             >

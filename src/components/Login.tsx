@@ -30,11 +30,11 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#111111] p-4">
-      <div className="w-full max-w-sm bg-white/5 backdrop-blur-lg rounded-2xl p-8 border border-white/10">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#111111] p-4">
+      <div className="w-full max-w-sm bg-white dark:bg-white/5 backdrop-blur-lg rounded-2xl p-8 border border-gray-200 dark:border-white/10">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[#e7f900]">Lisa</h1>
-          <p className="text-white/60 mt-1">Omnipresent</p>
+          <p className="text-gray-500 dark:text-white/60 mt-1">Omnipresent</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -44,7 +44,7 @@ export default function Login() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-4 py-3 rounded-xl bg-white/10 text-white placeholder-white/40 border border-white/10 focus:border-[#e7f900] focus:outline-none transition-colors"
+            className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/40 border border-gray-200 dark:border-white/10 focus:border-[#e7f900] focus:outline-none transition-colors"
           />
           <input
             type="password"
@@ -53,7 +53,7 @@ export default function Login() {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
-            className="w-full px-4 py-3 rounded-xl bg-white/10 text-white placeholder-white/40 border border-white/10 focus:border-[#e7f900] focus:outline-none transition-colors"
+            className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/40 border border-gray-200 dark:border-white/10 focus:border-[#e7f900] focus:outline-none transition-colors"
           />
 
           {error && (
@@ -69,7 +69,7 @@ export default function Login() {
           </button>
         </form>
 
-        <p className="text-center text-white/50 mt-6 text-sm">
+        <p className="text-center text-gray-400 dark:text-white/50 mt-6 text-sm">
           {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
           <button
             onClick={() => { setIsSignUp(!isSignUp); setError('') }}

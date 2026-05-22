@@ -102,7 +102,7 @@ export default function Links() {
   return (
     <div className="p-4 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-white">Quick Links</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Quick Links</h2>
         <button
           onClick={openAdd}
           className="px-4 py-2 bg-[#e7f900] text-[#111111] font-bold rounded-xl text-sm hover:brightness-110 transition-all"
@@ -115,7 +115,7 @@ export default function Links() {
         {links.map((link) => (
           <div
             key={link.id}
-            className="group bg-white/5 rounded-xl border border-white/10 p-4 hover:border-[#e7f900]/30 transition-all relative"
+            className="group bg-white dark:bg-white/5 rounded-xl border border-gray-200 dark:border-white/10 p-4 hover:border-[#e7f900]/30 transition-all relative shadow-sm dark:shadow-none"
           >
             <a
               href={link.url}
@@ -124,20 +124,20 @@ export default function Links() {
               className="block text-center"
             >
               <div className="text-3xl mb-2">{link.icon}</div>
-              <p className="text-white text-sm font-medium truncate">{link.label}</p>
-              <p className="text-white/30 text-[10px] truncate mt-1">{link.url}</p>
+              <p className="text-gray-900 dark:text-white text-sm font-medium truncate">{link.label}</p>
+              <p className="text-gray-400 dark:text-white/30 text-[10px] truncate mt-1">{link.url}</p>
             </a>
             <div className="absolute top-2 right-2 hidden group-hover:flex gap-1">
               <button
                 onClick={(e) => { e.preventDefault(); openEdit(link) }}
-                className="p-1 bg-white/10 rounded-lg text-xs hover:bg-white/20 transition-colors"
+                className="p-1 bg-gray-100 dark:bg-white/10 rounded-lg text-xs hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
               >
                 ✏️
               </button>
               {!link.id.startsWith('default-') && (
                 <button
                   onClick={(e) => { e.preventDefault(); handleDelete(link.id) }}
-                  className="p-1 bg-white/10 rounded-lg text-xs hover:bg-red-500/20 transition-colors"
+                  className="p-1 bg-gray-100 dark:bg-white/10 rounded-lg text-xs hover:bg-red-500/20 transition-colors"
                 >
                   🗑️
                 </button>
@@ -150,34 +150,34 @@ export default function Links() {
       {/* Add/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="bg-[#1a1a1a] rounded-2xl p-6 w-full max-w-sm border border-white/10 space-y-4">
-            <h3 className="text-lg font-semibold text-white">
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 w-full max-w-sm border border-gray-200 dark:border-white/10 space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               {editId ? 'Edit Link' : 'Add Link'}
             </h3>
             <div className="flex gap-2">
               <input
                 value={formIcon}
                 onChange={(e) => setFormIcon(e.target.value)}
-                className="w-14 text-center px-2 py-2.5 rounded-xl bg-white/10 text-white border border-white/10 focus:outline-none text-xl"
+                className="w-14 text-center px-2 py-2.5 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white border border-gray-200 dark:border-white/10 focus:outline-none text-xl"
                 placeholder="🔗"
               />
               <input
                 value={formLabel}
                 onChange={(e) => setFormLabel(e.target.value)}
                 placeholder="Label"
-                className="flex-1 px-4 py-2.5 rounded-xl bg-white/10 text-white border border-white/10 focus:border-[#e7f900] focus:outline-none transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white border border-gray-200 dark:border-white/10 focus:border-[#e7f900] focus:outline-none transition-colors"
               />
             </div>
             <input
               value={formUrl}
               onChange={(e) => setFormUrl(e.target.value)}
               placeholder="https://..."
-              className="w-full px-4 py-2.5 rounded-xl bg-white/10 text-white border border-white/10 focus:border-[#e7f900] focus:outline-none transition-colors"
+              className="w-full px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white border border-gray-200 dark:border-white/10 focus:border-[#e7f900] focus:outline-none transition-colors"
             />
             <div className="flex gap-2">
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 py-2.5 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-colors"
+                className="flex-1 py-2.5 bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-white rounded-xl hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
               >
                 Cancel
               </button>

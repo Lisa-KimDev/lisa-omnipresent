@@ -72,10 +72,13 @@ export default function Creative() {
     fetchHistory()
   }, [fetchHistory])
 
+  const [errorMsg, setErrorMsg] = useState('')
+
   const handleGenerate = async () => {
     if (!prompt.trim()) return
     setGenerating(true)
     setGeneratedImage('')
+    setErrorMsg('')
 
     const keywords = selectedStyle ? styleKeywords[selectedStyle] ?? '' : ''
     const fullPrompt = keywords ? `${prompt}, ${keywords}` : prompt
@@ -83,10 +86,16 @@ export default function Creative() {
     const seed = Date.now()
     const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=${w}&height=${h}&nologo=true&seed=${seed}`
 
-    // Preload the image
+    // 60s timeout — Pollinations hangs forever on blocked prompts
+    const timeout = setTimeout(() => {
+      setGenerating(false)
+      setErrorMsg('⏱️ Request timed out. The prompt may have been blocked or the service is busy. Try rephrasing.')
+    }, 60000)
+
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = async () => {
+      clearTimeout(timeout)
       setGeneratedImage(imageUrl)
       setGenerating(false)
 
@@ -104,8 +113,9 @@ export default function Creative() {
       }
     }
     img.onerror = () => {
-      setGeneratedImage(imageUrl)
+      clearTimeout(timeout)
       setGenerating(false)
+      setErrorMsg('❌ Generation failed. Try a different prompt.')
     }
     img.src = imageUrl
   }
@@ -140,7 +150,7 @@ export default function Creative() {
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="Describe what you want to create..."
           rows={3}
-          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-[#e7f900] focus:outline-none resize-none transition-colors"
+          className="w-full px-4 py-3 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 focus:border-[#e7f900] focus:outline-none resize-none transition-colors"
         />
 
         {/* Style presets */}
@@ -152,7 +162,7 @@ export default function Creative() {
               className={`px-3 py-1.5 rounded-full text-sm transition-all ${
                 selectedStyle === style
                   ? 'bg-[#e7f900] text-[#111111] font-semibold'
-                  : 'bg-white/10 text-white/70 hover:bg-white/20'
+                  : 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-white/70 hover:bg-gray-200 dark:hover:bg-white/20'
               }`}
             >
               {style}
@@ -169,7 +179,7 @@ export default function Creative() {
               className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
                 selectedSize === size
                   ? 'bg-[#e7f900]/20 text-[#e7f900] border border-[#e7f900]/50'
-                  : 'bg-white/5 text-white/50 border border-white/10'
+                  : 'bg-gray-50 dark:bg-white/5 text-gray-400 dark:text-white/50 border border-gray-200 dark:border-white/10'
               }`}
             >
               {size}
@@ -184,12 +194,16 @@ export default function Creative() {
         >
           {generating ? '🎨 Generating...' : '✨ Generate Image'}
         </button>
+
+        {errorMsg && (
+          <p className="text-red-400 text-sm text-center py-2">{errorMsg}</p>
+        )}
       </div>
 
       {/* Generated image */}
       {generatedImage && (
         <div className="space-y-3">
-          <div className="rounded-xl overflow-hidden border border-white/10">
+          <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-white/10">
             <img
               src={generatedImage}
               alt="Generated"
@@ -200,13 +214,13 @@ export default function Creative() {
           <div className="flex gap-2">
             <button
               onClick={handleDownload}
-              className="flex-1 py-2 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-colors"
+              className="flex-1 py-2 bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-white rounded-xl hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
             >
               📥 Download
             </button>
             <button
               onClick={handleShare}
-              className="flex-1 py-2 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-colors"
+              className="flex-1 py-2 bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-white rounded-xl hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
             >
               📤 Share
             </button>
@@ -217,22 +231,22 @@ export default function Creative() {
       {/* History */}
       {history.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-white/80">History</h2>
+          <h2 className="text-lg font-semibold text-gray-700 dark:text-white/80">History</h2>
           <div className="grid grid-cols-2 gap-3">
             {history.map((gen) => (
-              <div key={gen.id} className="rounded-xl overflow-hidden border border-white/10 bg-white/5">
+              <div key={gen.id} className="rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5">
                 <img
                   src={gen.image_url}
                   alt={gen.prompt}
                   className="w-full aspect-square object-cover"
                 />
                 <div className="p-2">
-                  <p className="text-xs text-white/70 truncate">{gen.prompt}</p>
+                  <p className="text-xs text-gray-600 dark:text-white/70 truncate">{gen.prompt}</p>
                   <div className="flex items-center justify-between mt-1">
                     <span className="text-[10px] px-2 py-0.5 bg-[#e7f900]/20 text-[#e7f900] rounded-full">
                       {gen.style}
                     </span>
-                    <span className="text-[10px] text-white/40">
+                    <span className="text-[10px] text-gray-400 dark:text-white/40">
                       {new Date(gen.created_at).toLocaleDateString()}
                     </span>
                   </div>

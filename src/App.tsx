@@ -38,7 +38,7 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#111111]">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#111111]">
         <div className="text-[#e7f900] text-xl font-bold animate-pulse">Loading...</div>
       </div>
     )

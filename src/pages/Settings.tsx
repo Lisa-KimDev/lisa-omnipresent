@@ -60,14 +60,14 @@ export default function Settings() {
   return (
     <div className="p-4 max-w-2xl mx-auto space-y-6">
       {/* Appearance */}
-      <section className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-4">
-        <h2 className="text-lg font-semibold text-white">Appearance</h2>
+      <section className="bg-white dark:bg-white/5 rounded-xl p-4 border border-gray-200 dark:border-white/10 space-y-4 shadow-sm dark:shadow-none">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Appearance</h2>
         <div className="flex items-center justify-between">
-          <span className="text-white/70">Dark Mode</span>
+          <span className="text-gray-600 dark:text-white/70">Dark Mode</span>
           <button
             onClick={toggleDark}
             className={`relative w-12 h-6 rounded-full transition-colors ${
-              dark ? 'bg-[#e7f900]' : 'bg-white/20'
+              dark ? 'bg-[#e7f900]' : 'bg-gray-300 dark:bg-white/20'
             }`}
           >
             <span
@@ -80,15 +80,15 @@ export default function Settings() {
       </section>
 
       {/* Default Style */}
-      <section className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-4">
-        <h2 className="text-lg font-semibold text-white">Default Image Style</h2>
+      <section className="bg-white dark:bg-white/5 rounded-xl p-4 border border-gray-200 dark:border-white/10 space-y-4 shadow-sm dark:shadow-none">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Default Image Style</h2>
         <select
           value={defaultStyle}
           onChange={(e) => changeStyle(e.target.value)}
-          className="w-full px-4 py-2.5 rounded-xl bg-white/10 text-white border border-white/10 focus:border-[#e7f900] focus:outline-none"
+          className="w-full px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white border border-gray-200 dark:border-white/10 focus:border-[#e7f900] focus:outline-none"
         >
           {styles.map((s) => (
-            <option key={s} value={s} className="bg-[#111111]">
+            <option key={s} value={s} className="bg-white dark:bg-[#111111]">
               {s}
             </option>
           ))}
@@ -96,12 +96,12 @@ export default function Settings() {
       </section>
 
       {/* Account */}
-      <section className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-4">
-        <h2 className="text-lg font-semibold text-white">Account</h2>
+      <section className="bg-white dark:bg-white/5 rounded-xl p-4 border border-gray-200 dark:border-white/10 space-y-4 shadow-sm dark:shadow-none">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Account</h2>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-white/50 text-sm">Email</span>
-            <span className="text-white text-sm">{user?.email ?? '—'}</span>
+            <span className="text-gray-400 dark:text-white/50 text-sm">Email</span>
+            <span className="text-gray-900 dark:text-white text-sm">{user?.email ?? '—'}</span>
           </div>
           <div className="space-y-2">
             <input
@@ -110,7 +110,7 @@ export default function Settings() {
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="New password"
               minLength={6}
-              className="w-full px-4 py-2.5 rounded-xl bg-white/10 text-white border border-white/10 focus:border-[#e7f900] focus:outline-none transition-colors placeholder-white/30"
+              className="w-full px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white border border-gray-200 dark:border-white/10 focus:border-[#e7f900] focus:outline-none transition-colors placeholder-gray-400 dark:placeholder-white/30"
             />
             <button
               onClick={changePassword}
@@ -129,8 +129,8 @@ export default function Settings() {
       </section>
 
       {/* About */}
-      <section className="bg-white/5 rounded-xl p-4 border border-white/10 text-center">
-        <p className="text-white/50 text-sm">
+      <section className="bg-white dark:bg-white/5 rounded-xl p-4 border border-gray-200 dark:border-white/10 text-center shadow-sm dark:shadow-none">
+        <p className="text-gray-400 dark:text-white/50 text-sm">
           Lisa Omnipresent v1.0 — Built with 💛 by Lisa Kim
         </p>
       </section>
