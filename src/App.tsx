@@ -6,6 +6,7 @@ import Login from './components/Login'
 import Layout from './components/Layout'
 import Creative from './pages/Creative'
 import Tasks from './pages/Tasks'
+import Docs from './pages/Docs'
 import Inbox from './pages/Inbox'
 import Links from './pages/Links'
 import Settings from './pages/Settings'
@@ -54,6 +55,7 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/creative" element={<Creative />} />
           <Route path="/tasks" element={<Tasks />} />
+          <Route path="/docs" element={<Docs />} />
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/links" element={<Links />} />
           <Route path="/settings" element={<Settings />} />

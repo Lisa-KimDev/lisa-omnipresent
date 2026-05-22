@@ -4,6 +4,7 @@ import ThemeToggle from './ThemeToggle'
 const tabs = [
   { to: '/creative', icon: '🎨', label: 'Creative' },
   { to: '/tasks', icon: '✅', label: 'Tasks' },
+  { to: '/docs', icon: '📁', label: 'Docs' },
   { to: '/inbox', icon: '📧', label: 'Inbox' },
   { to: '/links', icon: '🔗', label: 'Links' },
   { to: '/settings', icon: '⚙️', label: 'Settings' },
