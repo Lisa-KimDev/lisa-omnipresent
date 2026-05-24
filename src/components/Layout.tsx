@@ -28,20 +28,27 @@ export default function Layout() {
       {/* Bottom Tab Bar */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md border-t border-gray-200 dark:border-white/10">
         <div
-          className="flex items-center justify-around max-w-lg mx-auto"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+          className="flex items-center overflow-x-auto scrollbar-hide"
+          style={{
+            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+            WebkitOverflowScrolling: 'touch',
+            scrollSnapType: 'x mandatory',
+            msOverflowStyle: 'none',
+            scrollbarWidth: 'none',
+          }}
         >
           {tabs.map((tab) => (
             <NavLink
               key={tab.to}
               to={tab.to}
               className={({ isActive }) =>
-                `flex flex-col items-center py-2 px-3 text-xs transition-colors ${
+                `flex flex-col items-center py-2 px-4 text-xs whitespace-nowrap transition-colors shrink-0 ${
                   isActive
                     ? 'text-[#e7f900]'
                     : 'text-gray-400 dark:text-white/50'
                 }`
               }
+              style={{ scrollSnapAlign: 'start' }}
             >
               <span className="text-xl mb-0.5">{tab.icon}</span>
               <span>{tab.label}</span>
