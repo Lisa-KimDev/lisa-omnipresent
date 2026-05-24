@@ -80,14 +80,16 @@ const statusBadge: Record<string, string> = {
   failed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
 }
 
-// ─── LLM Model Options ────────────────────────────────
-const LLM_MODELS = [
-  { id: 'nvidia/llama-3.1-nemotron-nano-8b-v1', name: 'Nemotron Nano 8B', provider: 'NVIDIA NIM', cost: 'Free', tier: 'budget' },
-  { id: 'deepseek-v4-flash', name: 'DeepSeek V4 Flash', provider: 'NVIDIA NIM', cost: '$0.18/M', tier: 'mid' },
-  { id: 'deepseek-v4-pro', name: 'DeepSeek V4 Pro', provider: 'NVIDIA NIM', cost: '$0.90/M', tier: 'premium' },
-  { id: 'meta/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', provider: 'NVIDIA NIM', cost: 'Free', tier: 'mid' },
-  { id: 'nvidia/llama-3.1-nemotron-ultra-253b-v1', name: 'Nemotron Ultra 253B', provider: 'NVIDIA NIM', cost: 'Free', tier: 'premium' },
-  { id: 'google/gemma-3-27b-it', name: 'Gemma 3 27B', provider: 'NVIDIA NIM', cost: 'Free', tier: 'mid' },
+// ─── LLM Model Presets ────────────────────────────────
+const LLM_PRESETS = [
+  { id: 'nvidia-nemotron-nano', name: 'Nemotron Nano 8B', url: 'https://integrate.api.nvidia.com/v1/chat/completions', model: 'nvidia/llama-3.1-nemotron-nano-8b-v1', cost: 'Free', tier: 'budget' },
+  { id: 'nvidia-llama-33-70b', name: 'Llama 3.3 70B', url: 'https://integrate.api.nvidia.com/v1/chat/completions', model: 'meta/llama-3.3-70b-instruct', cost: 'Free', tier: 'mid' },
+  { id: 'nvidia-gemma-3-27b', name: 'Gemma 3 27B', url: 'https://integrate.api.nvidia.com/v1/chat/completions', model: 'google/gemma-3-27b-it', cost: 'Free', tier: 'mid' },
+  { id: 'nvidia-nemotron-ultra', name: 'Nemotron Ultra 253B', url: 'https://integrate.api.nvidia.com/v1/chat/completions', model: 'nvidia/llama-3.1-nemotron-ultra-253b-v1', cost: 'Free', tier: 'premium' },
+  { id: 'nvidia-deepseek-v4-flash', name: 'DeepSeek V4 Flash', url: 'https://integrate.api.nvidia.com/v1/chat/completions', model: 'deepseek-v4-flash', cost: '$0.18/M', tier: 'mid' },
+  { id: 'nvidia-deepseek-v4-pro', name: 'DeepSeek V4 Pro', url: 'https://integrate.api.nvidia.com/v1/chat/completions', model: 'deepseek-v4-pro', cost: '$0.90/M', tier: 'premium' },
+  { id: 'openrouter-auto', name: 'OpenRouter Auto', url: 'https://openrouter.ai/api/v1/chat/completions', model: 'openrouter/auto', cost: 'Varies', tier: 'mid' },
+  { id: 'custom', name: 'Custom...', url: '', model: '', cost: '', tier: 'custom' },
 ]
 
 // ─── Sub-components ───────────────────────────────────
@@ -250,6 +252,8 @@ function LLMPickerPanel({ config, onConfigUpdate }: {
   onConfigUpdate: (key: string, value: Record<string, any>) => void
 }) {
   const [saving, setSaving] = useState<string | null>(null)
+  const [showKeyFree, setShowKeyFree] = useState(false)
+  const [showKeyPaid, setShowKeyPaid] = useState(false)
 
   const freeConfig = config.find(c => c.key === 'soonsnap_llm_free')
   const paidConfig = config.find(c => c.key === 'soonsnap_llm_paid')
@@ -257,116 +261,79 @@ function LLMPickerPanel({ config, onConfigUpdate }: {
   const ratePaid = config.find(c => c.key === 'soonsnap_rate_paid')
   const maintenance = config.find(c => c.key === 'maintenance_mode')
 
-  async function updateModel(configKey: string, modelId: string) {
+  function updateField(configKey: string, field: string, value: any) {
+    const existing = config.find(c => c.key === configKey)
+    const current = existing?.value || {}
+    setSaving(`${configKey}-${field}`)
+    onConfigUpdate(configKey, { ...current, [field]: value })
+    setSaving(null)
+  }
+
+  function applyPreset(configKey: string, presetId: string) {
+    const preset = LLM_PRESETS.find(p => p.id === presetId)
+    if (!preset || preset.id === 'custom') return
     const existing = config.find(c => c.key === configKey)
     const current = existing?.value || {}
     setSaving(configKey)
-    await onConfigUpdate(configKey, { ...current, model: modelId })
+    // Don't overwrite api_key when applying a preset — keep existing key
+    onConfigUpdate(configKey, {
+      ...current,
+      url: preset.url,
+      model: preset.model,
+    })
     setSaving(null)
   }
 
-  async function updateParam(configKey: string, param: string, value: any) {
-    const existing = config.find(c => c.key === configKey)
-    const current = existing?.value || {}
-    setSaving(configKey + param)
-    await onConfigUpdate(configKey, { ...current, [param]: value })
-    setSaving(null)
+  function maskKey(key: string | undefined): string {
+    if (!key) return ''
+    if (key.length <= 8) return '••••••••'
+    return key.slice(0, 4) + '••••••••' + key.slice(-4)
   }
 
-  function getModelName(id: string) {
-    return LLM_MODELS.find(m => m.id === id)?.name || id
+  // Detect which preset matches current config
+  function detectPreset(cfg: AppConfig | undefined): string {
+    if (!cfg) return 'custom'
+    const { url, model } = cfg.value
+    const match = LLM_PRESETS.find(p => p.url === url && p.model === model)
+    return match?.id || 'custom'
   }
 
   return (
     <div className="space-y-4">
-      {/* SoonSnap LLM Section */}
+      {/* ─── LLM Config Card ──────────────────────── */}
       <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 p-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-white/40 mb-3">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-white/40 mb-4">
           🤖 SoonSnap AI Model
         </h3>
 
         {/* Free Tier */}
-        <div className="space-y-2 mb-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-[#111111] dark:text-white">Free Tier</span>
-            {saving === 'soonsnap_llm_free' && <span className="text-[10px] text-[#e7f900]">Saving...</span>}
-          </div>
-          <select
-            value={freeConfig?.value?.model || ''}
-            onChange={e => updateModel('soonsnap_llm_free', e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111111] text-sm text-[#111111] dark:text-white"
-          >
-            {LLM_MODELS.filter(m => m.tier === 'budget' || m.tier === 'mid').map(m => (
-              <option key={m.id} value={m.id}>
-                {m.name} ({m.cost})
-              </option>
-            ))}
-          </select>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] text-gray-400">Tokens:</span>
-              <input
-                type="number"
-                value={freeConfig?.value?.max_tokens || 4096}
-                onChange={e => updateParam('soonsnap_llm_free', 'max_tokens', parseInt(e.target.value) || 4096)}
-                className="w-20 px-2 py-1 rounded border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111111] text-xs text-center text-[#111111] dark:text-white"
-              />
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] text-gray-400">Temp:</span>
-              <input
-                type="number"
-                step="0.1"
-                min="0"
-                max="2"
-                value={freeConfig?.value?.temperature ?? 0.7}
-                onChange={e => updateParam('soonsnap_llm_free', 'temperature', parseFloat(e.target.value) || 0.7)}
-                className="w-14 px-2 py-1 rounded border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111111] text-xs text-center text-[#111111] dark:text-white"
-              />
-            </div>
-          </div>
-        </div>
+        <TierConfigEditor
+          label="Free Tier"
+          config={freeConfig}
+          saving={saving}
+          showKey={showKeyFree}
+          onToggleKey={() => setShowKeyFree(!showKeyFree)}
+          onApplyPreset={(id) => applyPreset('soonsnap_llm_free', id)}
+          onUpdateField={(field, val) => updateField('soonsnap_llm_free', field, val)}
+          detectedPreset={detectPreset(freeConfig)}
+          maskKey={maskKey}
+          defaultTokens={4096}
+        />
 
         {/* Paid Tier */}
-        <div className="space-y-2 pt-3 border-t border-gray-100 dark:border-white/5">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-[#111111] dark:text-white">Paid Tier</span>
-            {saving === 'soonsnap_llm_paid' && <span className="text-[10px] text-[#e7f900]">Saving...</span>}
-          </div>
-          <select
-            value={paidConfig?.value?.model || ''}
-            onChange={e => updateModel('soonsnap_llm_paid', e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111111] text-sm text-[#111111] dark:text-white"
-          >
-            {LLM_MODELS.map(m => (
-              <option key={m.id} value={m.id}>
-                {m.name} ({m.cost})
-              </option>
-            ))}
-          </select>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] text-gray-400">Tokens:</span>
-              <input
-                type="number"
-                value={paidConfig?.value?.max_tokens || 16384}
-                onChange={e => updateParam('soonsnap_llm_paid', 'max_tokens', parseInt(e.target.value) || 16384)}
-                className="w-20 px-2 py-1 rounded border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111111] text-xs text-center text-[#111111] dark:text-white"
-              />
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] text-gray-400">Temp:</span>
-              <input
-                type="number"
-                step="0.1"
-                min="0"
-                max="2"
-                value={paidConfig?.value?.temperature ?? 0.7}
-                onChange={e => updateParam('soonsnap_llm_paid', 'temperature', parseFloat(e.target.value) || 0.7)}
-                className="w-14 px-2 py-1 rounded border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111111] text-xs text-center text-[#111111] dark:text-white"
-              />
-            </div>
-          </div>
+        <div className="pt-4 mt-4 border-t border-gray-100 dark:border-white/5">
+          <TierConfigEditor
+            label="Paid Tier"
+            config={paidConfig}
+            saving={saving}
+            showKey={showKeyPaid}
+            onToggleKey={() => setShowKeyPaid(!showKeyPaid)}
+            onApplyPreset={(id) => applyPreset('soonsnap_llm_paid', id)}
+            onUpdateField={(field, val) => updateField('soonsnap_llm_paid', field, val)}
+            detectedPreset={detectPreset(paidConfig)}
+            maskKey={maskKey}
+            defaultTokens={16384}
+          />
         </div>
       </div>
 
@@ -413,6 +380,122 @@ function LLMPickerPanel({ config, onConfigUpdate }: {
             maintenance?.value?.enabled ? 'translate-x-6' : 'translate-x-0.5'
           }`} />
         </button>
+      </div>
+    </div>
+  )
+}
+
+// ─── Tier Config Editor Sub-component ─────────────────
+function TierConfigEditor({ label, config, saving, showKey, onToggleKey, onApplyPreset, onUpdateField, detectedPreset, maskKey, defaultTokens }: {
+  label: string
+  config: AppConfig | undefined
+  saving: string | null
+  showKey: boolean
+  onToggleKey: () => void
+  onApplyPreset: (presetId: string) => void
+  onUpdateField: (field: string, value: any) => void
+  detectedPreset: string
+  maskKey: (key: string | undefined) => string
+  defaultTokens: number
+}) {
+  const val = config?.value || {}
+  const isSaving = saving?.startsWith(config?.key || '__') || false
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-[#111111] dark:text-white">{label}</span>
+        {isSaving && <span className="text-[10px] text-[#e7f900] animate-pulse">Saving...</span>}
+      </div>
+
+      {/* Preset Quick-Pick */}
+      <select
+        value={detectedPreset}
+        onChange={e => onApplyPreset(e.target.value)}
+        className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111111] text-sm text-[#111111] dark:text-white"
+      >
+        <optgroup label="Quick Presets">
+          {LLM_PRESETS.map(p => (
+            <option key={p.id} value={p.id}>
+              {p.name} {p.cost ? `(${p.cost})` : ''}
+            </option>
+          ))}
+        </optgroup>
+      </select>
+
+      {/* API URL */}
+      <div>
+        <label className="text-[10px] text-gray-400 dark:text-white/40 uppercase tracking-wider">API URL</label>
+        <input
+          type="url"
+          value={val.url || ''}
+          onChange={e => onUpdateField('url', e.target.value)}
+          placeholder="https://integrate.api.nvidia.com/v1/chat/completions"
+          className="w-full mt-0.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111111] text-xs font-mono text-[#111111] dark:text-white placeholder-gray-300 dark:placeholder-white/20"
+        />
+      </div>
+
+      {/* Model */}
+      <div>
+        <label className="text-[10px] text-gray-400 dark:text-white/40 uppercase tracking-wider">Model ID</label>
+        <input
+          type="text"
+          value={val.model || ''}
+          onChange={e => onUpdateField('model', e.target.value)}
+          placeholder="nvidia/llama-3.1-nemotron-nano-8b-v1"
+          className="w-full mt-0.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111111] text-xs font-mono text-[#111111] dark:text-white placeholder-gray-300 dark:placeholder-white/20"
+        />
+      </div>
+
+      {/* API Key */}
+      <div>
+        <div className="flex items-center justify-between">
+          <label className="text-[10px] text-gray-400 dark:text-white/40 uppercase tracking-wider">API Key</label>
+          <button
+            onClick={onToggleKey}
+            className="text-[10px] text-[#e7f900] hover:underline"
+          >
+            {showKey ? 'Hide' : (val.api_key ? 'Show' : 'Set key')}
+          </button>
+        </div>
+        {showKey ? (
+          <input
+            type="text"
+            value={val.api_key || ''}
+            onChange={e => onUpdateField('api_key', e.target.value)}
+            placeholder="nvapi-... or sk-... (leave blank to use server env NVIDIA_API_KEY)"
+            className="w-full mt-0.5 px-3 py-2 rounded-lg border border-orange-300 dark:border-orange-500/30 bg-orange-50 dark:bg-orange-900/10 text-xs font-mono text-[#111111] dark:text-white placeholder-gray-300 dark:placeholder-white/20"
+          />
+        ) : (
+          <div className="mt-0.5 px-3 py-2 rounded-lg border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/[0.02] text-xs font-mono text-gray-400 dark:text-white/30 truncate">
+            {val.api_key ? `🔑 ${maskKey(val.api_key)}` : '🔑 Using server env key (default)'}
+          </div>
+        )}
+      </div>
+
+      {/* Tokens + Temp row */}
+      <div className="flex items-center gap-3 pt-1">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] text-gray-400">Max Tokens</span>
+          <input
+            type="number"
+            value={val.max_tokens || defaultTokens}
+            onChange={e => onUpdateField('max_tokens', parseInt(e.target.value) || defaultTokens)}
+            className="w-20 px-2 py-1.5 rounded border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111111] text-xs text-center text-[#111111] dark:text-white"
+          />
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] text-gray-400">Temp</span>
+          <input
+            type="number"
+            step="0.1"
+            min="0"
+            max="2"
+            value={val.temperature ?? 0.7}
+            onChange={e => onUpdateField('temperature', parseFloat(e.target.value) || 0.7)}
+            className="w-14 px-2 py-1.5 rounded border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111111] text-xs text-center text-[#111111] dark:text-white"
+          />
+        </div>
       </div>
     </div>
   )
