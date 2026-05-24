@@ -10,6 +10,7 @@ import Docs from './pages/Docs'
 import Inbox from './pages/Inbox'
 import Links from './pages/Links'
 import Settings from './pages/Settings'
+import Server from './pages/Server'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -59,7 +60,8 @@ function App() {
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/links" element={<Links />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="*" element={<Navigate to="/creative" replace />} />
+          <Route path="/server" element={<Server />} />
+          <Route path="*" element={<Navigate to="/server" replace />} />
         </Route>
       </Routes>
     </BrowserRouter>
