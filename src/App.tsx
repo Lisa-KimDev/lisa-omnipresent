@@ -11,6 +11,7 @@ import Inbox from './pages/Inbox'
 import Links from './pages/Links'
 import Settings from './pages/Settings'
 import Server from './pages/Server'
+import Apps from './pages/Apps'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -61,6 +62,7 @@ function App() {
           <Route path="/links" element={<Links />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/server" element={<Server />} />
+          <Route path="/apps" element={<Apps />} />
           <Route path="*" element={<Navigate to="/server" replace />} />
         </Route>
       </Routes>
