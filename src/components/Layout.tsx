@@ -7,6 +7,7 @@ const tabs = [
   { to: '/docs', icon: '📁', label: 'Docs' },
   { to: '/inbox', icon: '📧', label: 'Inbox' },
   { to: '/links', icon: '🔗', label: 'Links' },
+  { to: '/voice', icon: '🎙️', label: 'Voice' },
   { to: '/server', icon: '🖥️', label: 'Server' },
   { to: '/apps', icon: '🎛️', label: 'Apps' },
   { to: '/settings', icon: '⚙️', label: 'Settings' },

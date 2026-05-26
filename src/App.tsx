@@ -9,6 +9,7 @@ import Tasks from './pages/Tasks'
 import Docs from './pages/Docs'
 import Inbox from './pages/Inbox'
 import Links from './pages/Links'
+import Voice from './pages/Voice'
 import Settings from './pages/Settings'
 import Server from './pages/Server'
 import Apps from './pages/Apps'
@@ -60,6 +61,7 @@ function App() {
           <Route path="/docs" element={<Docs />} />
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/links" element={<Links />} />
+          <Route path="/voice" element={<Voice />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/server" element={<Server />} />
           <Route path="/apps" element={<Apps />} />
