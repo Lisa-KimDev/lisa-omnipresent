@@ -317,8 +317,8 @@ export default function Docs() {
     setSharedLoading(true)
     setSharedError('')
     try {
-      const baseUrl = import.meta.env.DEV ? 'http://localhost:8082' : 'http://173.249.36.76:8082'
-      const res = await fetch(`${baseUrl}/docs/list`, { method: 'POST' })
+      const baseUrl = import.meta.env.DEV ? 'http://localhost:8082' : `${window.location.origin}/docs-api`
+      const res = await fetch(`${baseUrl}/list`, { method: 'POST' })
       if (!res.ok) throw new Error('Failed to load shared files')
       const data = await res.json()
       setSharedFiles(data.files || [])
