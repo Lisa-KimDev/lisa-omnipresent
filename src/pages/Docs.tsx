@@ -252,10 +252,25 @@ function SheetViewer({ fileId, fileName, onBack }: { fileId: string; fileName: s
   )
 }
 
+// ── Shared File type (from Lisa API / Supabase Storage) ──
+interface SharedFile {
+  name: string
+  id: string
+  size: number
+  mimeType: string
+  createdAt: string
+  url: string
+}
+
 // ── Main Docs Page ──
 type ViewMode = 'list' | 'doc' | 'sheet'
+type TabMode = 'drive' | 'shared'
 
 export default function Docs() {
+  const [tabMode, setTabMode] = useState<TabMode>('drive')
+  const [sharedFiles, setSharedFiles] = useState<SharedFile[]>([])
+  const [sharedLoading, setSharedLoading] = useState(false)
+  const [sharedError, setSharedError] = useState('')
   const [files, setFiles] = useState<DriveFile[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -296,6 +311,24 @@ export default function Docs() {
   }
 
   useEffect(() => { fetchFiles() }, [currentFolder, filter])
+
+  // Fetch shared files from Lisa API
+  const fetchSharedFiles = async () => {
+    setSharedLoading(true)
+    setSharedError('')
+    try {
+      const baseUrl = import.meta.env.DEV ? 'http://localhost:8082' : 'http://173.249.36.76:8082'
+      const res = await fetch(`${baseUrl}/docs/list`, { method: 'POST' })
+      if (!res.ok) throw new Error('Failed to load shared files')
+      const data = await res.json()
+      setSharedFiles(data.files || [])
+    } catch (e) {
+      setSharedError((e as Error).message)
+    }
+    setSharedLoading(false)
+  }
+
+  useEffect(() => { if (tabMode === 'shared') fetchSharedFiles() }, [tabMode])
 
   const handleSearch = () => {
     if (search.trim()) fetchFiles()
@@ -364,6 +397,80 @@ export default function Docs() {
   // ── Render file list ──
   return (
     <div className="p-4 space-y-4 max-w-2xl mx-auto">
+      {/* Tab toggle: Drive / Shared */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setTabMode('drive')}
+          className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${
+            tabMode === 'drive' ? 'bg-[#e7f900] text-[#111111]' : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-white/50'
+          }`}
+        >
+          📁 Drive
+        </button>
+        <button
+          onClick={() => setTabMode('shared')}
+          className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${
+            tabMode === 'shared' ? 'bg-[#e7f900] text-[#111111]' : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-white/50'
+          }`}
+        >
+          🤖 Shared from Agents
+        </button>
+      </div>
+
+      {/* ── Shared Files Tab ── */}
+      {tabMode === 'shared' && (
+        <div className="space-y-2">
+          {sharedLoading && (
+            <div className="space-y-2">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-white/5 animate-pulse">
+                  <div className="w-6 h-6 bg-gray-200 dark:bg-white/10 rounded" />
+                  <div className="flex-1">
+                    <div className="h-3 bg-gray-200 dark:bg-white/10 rounded w-2/3 mb-1" />
+                    <div className="h-2 bg-gray-200 dark:bg-white/10 rounded w-1/3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {sharedError && (
+            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+              <p className="text-sm text-red-400">{sharedError}</p>
+            </div>
+          )}
+          {!sharedLoading && !sharedError && sharedFiles.map(f => (
+            <a
+              key={f.id}
+              href={f.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-[#e7f900]/50 dark:hover:border-[#e7f900]/30 transition-all"
+            >
+              <span className="text-xl flex-shrink-0">
+                {f.mimeType === 'application/pdf' ? '📕' : f.mimeType.startsWith('image/') ? '🖼️' : '📎'}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  {f.name.replace(/^\d{4}-\d{2}-\d{2}T[\d-]+_/, '')}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[10px] text-gray-400 dark:text-white/30">
+                    {(f.size / 1024).toFixed(f.size > 1024 * 1024 ? 1 : 0)}{f.size > 1024 * 1024 ? 'MB' : 'KB'}
+                  </span>
+                  <span className="text-[10px] text-gray-400 dark:text-white/30">{timeAgo(f.createdAt)}</span>
+                </div>
+              </div>
+              <span className="text-gray-300 dark:text-white/20 text-lg">↗</span>
+            </a>
+          ))}
+          {!sharedLoading && !sharedError && sharedFiles.length === 0 && (
+            <p className="text-center text-gray-400 dark:text-white/30 py-8">No shared files yet. Data can upload here!</p>
+          )}
+        </div>
+      )}
+
+      {/* ── Google Drive Tab ── */}
+      {tabMode === 'drive' && (<>
       {/* Search */}
       <div className="flex gap-2">
         <input
@@ -497,6 +604,7 @@ export default function Docs() {
           )}
         </div>
       )}
+      </>)}
     </div>
   )
 }
