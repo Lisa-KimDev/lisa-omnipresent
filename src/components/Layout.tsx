@@ -10,6 +10,7 @@ const tabs = [
   { to: '/voice', icon: '🎙️', label: 'Voice' },
   { to: '/server', icon: '🖥️', label: 'Server' },
   { to: '/apps', icon: '🎛️', label: 'Apps' },
+  { to: '/agents', icon: '🤖', label: 'Agents' },
   { to: '/settings', icon: '⚙️', label: 'Settings' },
 ]
 

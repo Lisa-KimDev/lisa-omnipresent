@@ -13,6 +13,7 @@ import Voice from './pages/Voice'
 import Settings from './pages/Settings'
 import Server from './pages/Server'
 import Apps from './pages/Apps'
+import Agents from './pages/Agents'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -65,6 +66,7 @@ function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/server" element={<Server />} />
           <Route path="/apps" element={<Apps />} />
+          <Route path="/agents" element={<Agents />} />
           <Route path="*" element={<Navigate to="/server" replace />} />
         </Route>
       </Routes>

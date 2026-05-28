@@ -15,6 +15,7 @@ interface Todo {
   ai_solution: string | null
   ai_description_at: string | null
   ai_solution_at: string | null
+  assigned_agent_id: string | null
 }
 
 const categories = [
@@ -367,6 +368,7 @@ export default function Tasks() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null)
+  const [agents, setAgents] = useState<Record<string, { name: string; avatar: string }>>({})
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user))
@@ -386,9 +388,18 @@ export default function Tasks() {
     if (data) setTodos(data as Todo[])
   }, [user])
 
-  useEffect(() => {
-    fetchTodos()
-  }, [fetchTodos])
+  const fetchAgents = useCallback(async () => {
+    if (!user) return
+    const { data } = await supabase.from('agents').select('id, name, avatar').eq('user_id', user.id)
+    if (data) {
+      const map: Record<string, { name: string; avatar: string }> = {}
+      data.forEach((a: any) => { map[a.id] = { name: a.name, avatar: a.avatar } })
+      setAgents(map)
+    }
+  }, [user])
+
+  useEffect(() => { fetchTodos() }, [fetchTodos])
+  useEffect(() => { fetchAgents() }, [fetchAgents])
 
   const addTodo = async () => {
     if (!title.trim() || !user) return
@@ -577,6 +588,11 @@ export default function Tasks() {
                       {due.label && (
                         <span className={`text-[10px] ${due.className}`}>
                           {due.label}
+                        </span>
+                      )}
+                      {todo.assigned_agent_id && agents[todo.assigned_agent_id] && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-400 font-semibold flex items-center gap-1">
+                          {agents[todo.assigned_agent_id].avatar} {agents[todo.assigned_agent_id].name}
                         </span>
                       )}
                     </div>
